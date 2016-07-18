@@ -1,6 +1,9 @@
+> This image started as a fork from [stockflare/docker-nginx-elb-websocket](https://github.com/stockflare/docker-nginx-elb-websocket)
+
+
 # Dreams of Websockets
 
-At Stockflare, we use this docker container to enable Websocket connections through [AWS Elastic Load Balancers](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-elb.html).
+We use this docker container to enable Websocket connections through [AWS Elastic Load Balancers](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-elb.html).
 
 The container uses [confd]() for a one-time configuration of Nginx when the container starts, using environment variables. The Nginx configuration file is written to work in conjunction with an Elastic Load Balancer, itself using [ProxyProtocol](http://docs.aws.amazon.com/ElasticLoadBalancing/latest/DeveloperGuide/enable-proxy-protocol.html).
 
@@ -17,6 +20,9 @@ The container requires the presence of three environment variables. These variab
 | `DESTINATION_HOSTNAME` | The hostname to proxy traffic to. This should typically be the name of the linked docker container (explained below) |
 | `DESTINATION_PORT` | The port to proxy traffic to on the destination container |
 
+Requests made to the ```LISTEN_ON``` port are automatically redirected to https, using the same host and request uri.
+
+
 ## Brief Example
 
 Lets say that we have the following container running on a host:
@@ -29,18 +35,25 @@ To enable this container to proxy traffic to that application, we would run the 
 
 ```
 docker run --link app:app \
-           -p 45400:45400 \
-           -e LISTEN_ON=45400 \
+           -p 81:81 -p 444:444 \
+           -e LISTEN_ON=81 \
+           -e LISTEN_ON_TLS=444 \
            -e DESTINATION_HOSTNAME=app \
            -e DESTINATION_PORT=45490 \
-           -d stockflare/nginx-elb-websocket
+           -d mikesir87/nginx-elb-websocket
 ```
 
-This container would then start listening to traffic on port `45400`, forwarding it to your application container on port `45490`.
+This container would then start listening to traffic on ports `81` and `444`.  Requests made to port 81 will redirect the request to HTTPS and requests made to port ```444``` will be forwarded to the application container on port `45490`.
 
-If you were running these containers on EC2 hosts that were part of a load balanced auto scaling group, the load balancer would be configured with the aforementioned `ProxyProtocol` on port `45400`, complete with listeners forwarding `TCP` type traffic to port `45400`.
+If you were running these containers on EC2 hosts that were part of a load balanced auto scaling group, the load balancer would be configured with the aforementioned `ProxyProtocol` on ports `81` and ```444```.
 
-The container also provides a naive health check for ELBs located at `/ping`.
+```
+aws elb create-load-balancer-policy --load-balancer-name [my-loadbalancer] --policy-name proxyProtocol-policy --policy-type-name ProxyProtocolPolicyType --policy-attributes AttributeName=ProxyProtocol,AttributeValue=true
+aws elb set-load-balancer-policies-for-backend-server --load-balancer-name [my-loadbalancer] --instance-port 81 --policy-names proxyProtocol-policy 
+aws elb set-load-balancer-policies-for-backend-server --load-balancer-name [my-loadbalancer] --instance-port 444 --policy-names proxyProtocol-policy
+```
+
+Simply replace **[my-loadbalancer]** with the name of the ELB you've created.  The container also provides a naive health check for ELBs located at `/ping`.
 
 ## Why is this needed?
 
