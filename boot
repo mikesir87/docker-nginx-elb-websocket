@@ -5,7 +5,8 @@ confd -onetime -backend env
 
 echo "Wrote nginx config..."
 echo $SEP
-cat /etc/nginx/nginx.conf
+cat /etc/nginx/conf.d/proxy.conf
 echo $SEP
 
-nginx
+echo "Starting up nginx now..."
+nginx -g "daemon off;"
