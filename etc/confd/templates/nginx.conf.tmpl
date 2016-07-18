@@ -5,6 +5,11 @@
 
   server {
     listen {{getenv "LISTEN_ON"}} proxy_protocol;
+    return 301 https://$host$request_uri;
+  }
+
+  server {
+    listen {{getenv "LISTEN_ON_TLS"}} proxy_protocol;
     real_ip_header proxy_protocol;
 
     location /ping {
@@ -20,13 +25,6 @@
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header X-Forwarded-For $proxy_protocol_addr;
       proxy_set_header Connection $connection_upgrade;
-
-      if ($proxy_protocol_port = 443) {
-        set $actual_scheme "https";
-      }
-      if ($proxy_protocol_port = 80) {
-        set $actual_scheme "http";
-      }
-      proxy_set_header X-Forwarded-Proto $actual_scheme;
+      proxy_set_header X-Forwarded-Proto "https";
     }
   }

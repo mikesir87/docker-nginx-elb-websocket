@@ -12,7 +12,8 @@ The container requires the presence of three environment variables. These variab
 
 | Env | Purpose |
 |---|---|
-| `LISTEN_ON` | Determines which port Nginx will listen on |
+| `LISTEN_ON` | Determines which port Nginx will listen to for connections that are not TLS-originating |
+| `LISTEN_ON_TLS` | Determines which port Nginx will listen on for connections that are TLS inbound |
 | `DESTINATION_HOSTNAME` | The hostname to proxy traffic to. This should typically be the name of the linked docker container (explained below) |
 | `DESTINATION_PORT` | The port to proxy traffic to on the destination container |
 
