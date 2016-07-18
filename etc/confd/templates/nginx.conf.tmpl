@@ -26,8 +26,17 @@ http {
       proxy_set_header Host    $host;
       proxy_set_header Upgrade $http_upgrade;
       proxy_set_header X-Forwarded-For $proxy_protocol_addr;
-      proxy_set_header X-Forwarded-Proto $scheme;
       proxy_set_header Connection $connection_upgrade;
+
+      if ($proxy_protocol_port = 443) {
+        set $actual_scheme "https";
+      }
+      if ($proxy_protocol_port = 80) {
+        set $actual_scheme "http";
+      }
+      if ($actual_scheme) {
+        proxy_set_header X-Forwarded-Proto $actual_scheme;
+      }
     }
   }
 }
