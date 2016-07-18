@@ -1,6 +1,6 @@
-FROM nginx:1.9.4
+FROM nginx:1.11.1
 
-MAINTAINER David Kelley <david@stockflare.com>
+MAINTAINER Michael Irwin <mikesir87@gmail.com>
 
 ENV DEBIAN_FRONTEND noninteractive
 
