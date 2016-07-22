@@ -55,6 +55,11 @@ aws elb set-load-balancer-policies-for-backend-server --load-balancer-name [my-l
 
 Simply replace **[my-loadbalancer]** with the name of the ELB you've created.  The container also provides a naive health check for ELBs located at `/ping`.
 
+## Configuration
+
+Any ```/config-overrides/*.conf``` files will be included in the server's HTTP config. You can see where it's being included in the ```etc/confd/templates/nginx.conf.tmpl``` file.
+
+
 ## Why is this needed?
 
 Out-of-the-box, ELBs do not support Websockets and therefore require an additional proxy for which the connections must be negotiated through. There exist many blog posts on the internet, documenting the process for what we've done here. We wanted to create a more _generic_ and _complete_ approach to this. Below are some of the resources that we used:

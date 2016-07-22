@@ -10,6 +10,8 @@ ADD etc/confd /etc/confd
 
 ADD confd/confd-0.10.0-linux-amd64 /bin/confd
 
+RUN mkdir /config-overrides
+
 WORKDIR /nginx
 
 ADD boot boot
